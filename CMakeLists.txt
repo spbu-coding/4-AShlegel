@@ -3,5 +3,5 @@ project(tests LANGUAGES C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(converter converter.c)
-add_executable(comparer converter.c)
+add_executable(converter src/converter.c)
+add_executable(comparer src/converter.c)
