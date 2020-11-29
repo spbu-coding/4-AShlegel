@@ -1,29 +1,29 @@
 #include "RWbmp.c"
 
-void BMP_GetRGB(BMP_IMAGE* bmp, uint32_t x, uint32_t y, uint8_t* r, uint8_t* g, uint8_t* b ) {
-    uint8_t*	pixel;
+void BMP_GetRGB(BMP_IMAGE *bmp, uint32_t x, uint32_t y, uint8_t *r, uint8_t *g, uint8_t *b ) {
+	uint8_t		*pixel;
 	uint32_t	bytes_per_row;
-	uint8_t	    bytes_per_pixel;
+	uint8_t	    	bytes_per_pixel;
 
     if ( bmp == NULL || x < 0 || x >= bmp->header.width || y < 0 || y >= bmp->header.height ) {
-		PRINT_ERROR(INVALID_ARGUMENT);
-	}else {
-		LAST_ERROR_CODE = NO_ERROR;
-		bytes_per_pixel = bmp->header.bit_per_pixel >> 3;
-		bytes_per_row = bmp->header.data_size / bmp->header.height;
-		pixel = bmp->data + ( ( bmp->header.height - y - 1 ) * bytes_per_row + x * bytes_per_pixel );
-		if ( bmp->palette != NULL ) {
-			pixel = bmp->palette + *pixel * 4;
-		}
-		if ( r )	*r = *( pixel + 2 );
-		if ( g )	*g = *( pixel + 1 );
-		if ( b )	*b = *( pixel + 0 );
+	PRINT_ERROR(INVALID_ARGUMENT);
+    }else {
+	LAST_ERROR_CODE = NO_ERROR;
+	bytes_per_pixel = bmp->header.bit_per_pixel >> 3;
+	bytes_per_row = bmp->header.data_size / bmp->header.height;
+	pixel = bmp->data + ( ( bmp->header.height - y - 1 ) * bytes_per_row + x * bytes_per_pixel );
+	if ( bmp->palette != NULL ) {
+		pixel = bmp->palette + *pixel * 4;
 	}
+	if ( r )	*r = *( pixel + 2 );
+	if ( g )	*g = *( pixel + 1 );
+	if ( b )	*b = *( pixel + 0 );
+    }
 }
 
-int BMP_Compare(const char* file1, const char* file2) {
-    BMP_IMAGE* bmp1 = BMP_Read(file1);
-    BMP_IMAGE* bmp2 = BMP_Read(file2);
+int BMP_Compare(const char *file1, const char *file2) {
+    BMP_IMAGE *bmp1 = BMP_Read(file1);
+    BMP_IMAGE *bmp2 = BMP_Read(file2);
     if (LAST_ERROR_CODE)
         return -1;
 
@@ -60,9 +60,9 @@ int BMP_Compare(const char* file1, const char* file2) {
 }
 
 int main(int argc, char **argv){
-	if ( argc != 3 ){
-		fprintf( stderr, "Usage: %s <input file> <output file>\n", argv[0] );
-		return -1;
-	}
+    if ( argc != 3 ){
+	fprintf( stderr, "Usage: %s <input file> <output file>\n", argv[0] );
+	return -1;
+    }
     return BMP_Compare(argv[1], argv[2]);
 }
