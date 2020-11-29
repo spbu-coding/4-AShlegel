@@ -4,14 +4,14 @@
 #include <string.h>
 
 #define PRINT_ERROR( error ) \
-		{ fprintf( stderr, "error: %s\n", BMP_ERRORS_STRING[ error ] ); \
+	{ fprintf( stderr, "error: %s\n", BMP_ERRORS_STRING[ error ] ); \
         LAST_ERROR_CODE = error; }
 
 #define BMP_PALETTE_SIZE ( 256 * 4 )
 #define HEADER_PACK_SIZE 27
 
 typedef enum {
-	NO_ERROR = 0,
+    NO_ERROR = 0,
     ALLOC_ERROR,
     FILE_NOT_FOUND,
     BMP_READ_ERROR,
@@ -29,9 +29,9 @@ typedef enum {
 
 static BMP_ERRORS LAST_ERROR_CODE = NO_ERROR;
 
-static const char* BMP_ERRORS_STRING[] =
+static const char *BMP_ERRORS_STRING[] =
 {
-	"",
+    "",
     "Could not allocate enough memory",
     "File not found",
     "Read file error",
@@ -54,8 +54,8 @@ struct _bmp_header {
 	uint32_t	reserved;       //offset 0x06
 	uint32_t	data_offset;
 	uint32_t	header_size;
-	int32_t	    width;
-	int32_t     height;
+	int32_t	        width;
+	int32_t         height;
 	uint16_t	planes;         //offset 0x1A
 	uint16_t	bit_per_pixel;
 	uint32_t	compression;    //offset 0x1E
@@ -68,14 +68,14 @@ struct _bmp_header {
 #pragma pack(pop)
 
 struct _bmp_image {
-	struct _bmp_header	header;
-	uint8_t*		    palette;
-	uint8_t*		    data;
+	struct _bmp_header	    header;
+	uint8_t			    *palette;
+	uint8_t                     *data;
 };
 
 typedef struct _bmp_image BMP_IMAGE;
 
-void BMP_Image_Free( BMP_IMAGE* bmp ) {
+void BMP_Image_Free( BMP_IMAGE *bmp ) {
 	if ( bmp == NULL ) {
 		return;
 	}
@@ -89,14 +89,14 @@ void BMP_Image_Free( BMP_IMAGE* bmp ) {
 }
 
 
-BMP_IMAGE* BMP_Read(const char* filename){
-    BMP_IMAGE* bmp;
-    FILE* file;
+BMP_IMAGE *BMP_Read(const char *filename){
+    BMP_IMAGE *bmp;
+    FILE *file;
     LAST_ERROR_CODE = NO_ERROR;
 
     if ( filename == NULL ){
-	    PRINT_ERROR(INVALID_ARGUMENT)
-        return 0;
+	PRINT_ERROR(INVALID_ARGUMENT)
+        return NULL;
     }
 
     bmp = (BMP_IMAGE*)calloc( 1, sizeof( BMP_IMAGE ) );
@@ -106,7 +106,7 @@ BMP_IMAGE* BMP_Read(const char* filename){
     }
     file = fopen(filename, "rb");
     if ( file == NULL ) {
-		PRINT_ERROR(FILE_NOT_FOUND)
+	PRINT_ERROR(FILE_NOT_FOUND)
         free(bmp);
         return NULL;
     }
@@ -144,75 +144,75 @@ BMP_IMAGE* BMP_Read(const char* filename){
     if ( bmp->header.bit_per_pixel == 8 ) {
         bmp->palette = (uint8_t*) malloc( BMP_PALETTE_SIZE * sizeof( uint8_t ) );
         if ( bmp->palette == NULL ) {
-			PRINT_ERROR(ALLOC_ERROR)
-			fclose( file );
-			free( bmp );
-			return NULL;
-		}
+		PRINT_ERROR(ALLOC_ERROR)
+		fclose( file );
+		free( bmp );
+		return NULL;
+	}
         if ( fread( bmp->palette, sizeof( uint8_t ), BMP_PALETTE_SIZE, file ) != BMP_PALETTE_SIZE ) {
-			PRINT_ERROR( BMP_INVALID_ERROR)
-			fclose( file );
-			free( bmp->palette );
-			free( bmp );
-			return NULL;
-		}
+		PRINT_ERROR( BMP_INVALID_ERROR)
+		fclose( file );
+		free( bmp->palette );
+		free( bmp );
+		return NULL;
+	}
     }else{
         bmp->palette = NULL;
     }
 
     bmp->data = (uint8_t*) malloc( bmp->header.data_size );
-	if ( bmp->data == NULL ) {
-		PRINT_ERROR( ALLOC_ERROR)
-		fclose( file );
-		free( bmp->palette );
-		free( bmp );
-		return NULL;
-	}
-    if ( fread( bmp->data, sizeof( uint8_t ), bmp->header.data_size, file ) != bmp->header.data_size ) {
-		PRINT_ERROR( BMP_INVALID_ERROR)
-		fclose( file );
-		free( bmp->data );
-		free( bmp->palette );
-		free( bmp );
-		return NULL;
-	}
+    if ( bmp->data == NULL ) {
+	PRINT_ERROR( ALLOC_ERROR)
 	fclose( file );
+	free( bmp->palette );
+	free( bmp );
+	return NULL;
+    }
+    if ( fread( bmp->data, sizeof( uint8_t ), bmp->header.data_size, file ) != bmp->header.data_size ) {
+	PRINT_ERROR( BMP_INVALID_ERROR)
+	fclose( file );
+	free( bmp->data );
+	free( bmp->palette );
+	free( bmp );
+	return NULL;
+    }
+    fclose( file );
     return bmp;
 }
 
-void BMP_Write(BMP_IMAGE* bmp, const char* filename){
-    FILE*	file;
+void BMP_Write(BMP_IMAGE *bmp, const char *filename){
+    FILE *file;
     LAST_ERROR_CODE = NO_ERROR;
 
     if ( filename == NULL || bmp == NULL){
-	    PRINT_ERROR(INVALID_ARGUMENT)
-	    return;
-	}
+	PRINT_ERROR(INVALID_ARGUMENT)
+	return;
+    }
     file = fopen( filename, "wb" );
-	if ( file == NULL ) {
-		PRINT_ERROR(BMP_WRITE_ERROR)
-		return;
-	}
+    if ( file == NULL ) {
+	PRINT_ERROR(BMP_WRITE_ERROR)
+	return;
+    }
 
-	if ( fwrite( &bmp->header, sizeof( uint16_t ), HEADER_PACK_SIZE, file ) != HEADER_PACK_SIZE ) {
-		PRINT_ERROR(BMP_WRITE_ERROR)
-		fclose( file );
-		return;
-	}
+    if ( fwrite( &bmp->header, sizeof( uint16_t ), HEADER_PACK_SIZE, file ) != HEADER_PACK_SIZE ) {
+	PRINT_ERROR(BMP_WRITE_ERROR)
+	fclose( file );
+	return;
+    }
 
     if ( bmp->header.bit_per_pixel == 8 ){
-		if ( fwrite( bmp->palette, sizeof( uint8_t ), BMP_PALETTE_SIZE, file ) != BMP_PALETTE_SIZE ) {
-			PRINT_ERROR(BMP_WRITE_ERROR)
-			fclose( file );
-			return;
-		}
-	}
-
-    	if ( fwrite( bmp->data, sizeof( uint8_t ), bmp->header.data_size, file ) != bmp->header.data_size ) {
+	if ( fwrite( bmp->palette, sizeof( uint8_t ), BMP_PALETTE_SIZE, file ) != BMP_PALETTE_SIZE ) {
 		PRINT_ERROR(BMP_WRITE_ERROR)
 		fclose( file );
 		return;
 	}
+    }
 
+    if ( fwrite( bmp->data, sizeof( uint8_t ), bmp->header.data_size, file ) != bmp->header.data_size ) {
+	PRINT_ERROR(BMP_WRITE_ERROR)
 	fclose( file );
+	return;
+    }
+
+    fclose( file );
 }
